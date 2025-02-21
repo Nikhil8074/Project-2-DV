@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COVID-19 Data Visualization</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="CSS/q2_2.css">
+</head>
+<body>
+    <button class="btn" onclick="window.location.href='q2.html'" style="position: fixed;">← Back</button>
+    <div class="container">
+        <div class="dashboard-header">
+            <div class="header-content">
+                <h1 class="dashboard-title">COVID-19 Statistics of INDIA</h1>
+                <div class="controls">
+                    <button class="btn active" data-type="stacked">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                            <line x1="3" y1="9" x2="21" y2="9"/>
+                            <line x1="3" y1="15" x2="21" y2="15"/>
+                        </svg>
+                        Stacked View
+                    </button>
+                    <button class="btn" data-type="grouped">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12"/>
+                            <polyline points="8 5 12 19 16 5"/>
+                        </svg>
+                        Grouped View
+                    </button>
+                </div>
+            </div>
+            
+            <div class="deaths-preview" id="deaths-preview">
+                <h3>Deaths Trend Overview</h3>
+                <div id="small-deaths-chart"></div>
+                <h3 style="margin-bottom: 5px;">Click on the chart to view full details</h3>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <div id="main-chart"></div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #f87171;"></div>
+                <span style="color: white;">Active Cases</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #34d399;"></div>
+                <span style="color: white;">Recovered</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #6b7280;"></div>
+                <span style="color: white;">Deaths</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="deaths-modal" class="modal">
+        <div class="modal-content">
+            <button class="close-button">&times;</button>
+            <div id="full-deaths-chart"></div>
+        </div>
+    </div>
+
+    <script src="JS/q2_2.js"> 
+    </script>
+</body>
+</html>

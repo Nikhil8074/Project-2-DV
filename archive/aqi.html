@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>India AQI Visualization</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(45deg, #1a2a6c, #b21f1f, #fdbb2d);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            min-height: 100vh;
+        }
+
+        @keyframes gradientBG {
+            0% {
+                background-position: 0% 50%
+            }
+
+            50% {
+                background-position: 100% 50%
+            }
+
+            100% {
+                background-position: 0% 50%
+            }
+        }
+
+        .container {
+            max-width: 1200px;
+            height: 175%;
+            margin: 0 auto;
+            background: rgb(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        h1 {
+            text-align: center;
+            color: #1a365d;
+            margin-bottom: 30px;
+            font-size: 2.4em;
+            font-weight: 700;
+            background: linear-gradient(120deg, #1a365d, #2a9d8f);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .visualization-container {
+            position: relative;
+            height: 750px;
+            border-radius: 16px;
+            overflow: hidden;
+            background: rgb(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .map-view,
+        .graph-view {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .graph-view {
+            opacity: 0;
+            pointer-events: none;
+            background: rgb(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transform: translateX(100%);
+        }
+
+        .graph-view.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateX(0);
+        }
+
+        .map-view.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateX(-100%);
+        }
+
+        .city-marker {
+            fill: #e63946;
+            stroke: white;
+            stroke-width: 2;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+
+        .city-label {
+            font-size: 13px;
+            font-weight: 600;
+            text-anchor: middle;
+            fill: #2d3748;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .city-group:hover .city-label {
+            font-size: 15px;
+            font-weight: 700;
+            fill: #1d3557;
+        }
+
+        .line {
+            fill: none;
+            stroke-width: 3;
+            stroke-dasharray: 2000;
+            stroke-dashoffset: 2000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .line.visible {
+            opacity: 1;
+            animation: drawLine 2s ease-out forwards;
+        }
+
+        @keyframes drawLine {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        .data-point-pre {
+            fill: #2a9d8f;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+            animation: fadeInPoint 0.5s ease-out forwards;
+        }
+
+        .data-point-lockdown {
+            fill: #e63946;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+            animation: fadeInPoint 0.5s ease-out forwards;
+        }
+
+        .data-point-post {
+            fill: #f9c74f;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+            animation: fadeInPoint 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeInPoint {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .data-point-pre:hover,
+        .data-point-lockdown:hover,
+        .data-point-post:hover {
+            r: 8;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+
+        .axis-label {
+            font-size: 13px;
+            fill: #4a5568;
+            font-weight: 500;
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out forwards 1s;
+        }
+
+        .graph-title {
+            color: #1a365d;
+            margin: 0 0 20px 0;
+            font-size: 1.8em;
+            font-weight: 600;
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #2a9d8f 0%, #1d3557 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out forwards 0.3s;
+        }
+
+        .back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .back-button:active {
+            transform: translateY(0);
+        }
+
+        .tooltip {
+            position: absolute;
+            padding: 10px 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            font-size: 14px;
+            pointer-events: none;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 0 15px;
+        }
+
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .lockdown-note {
+            margin-top: 20px;
+            text-align: center;
+            color: #4a5568;
+            font-size: 14px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            max-width: 800px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Air Quality Index Across Major Indian Cities</h1>
+        <div class="visualization-container">
+            <div class="map-view">
+                <svg id="map" width="100%" height="100%"></svg>
+            </div>
+            <div class="graph-view">
+                <button class="back-button" onclick="showMap()">← Back to Map</button>
+                <h2 class="graph-title" id="graph-title">Monthly AQI Trends</h2>
+                <svg id="graph" width="1000" height="500"></svg>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #2a9d8f;"></div>
+                        <span>Pre-lockdown (Jan-Mar)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #e63946;"></div>
+                        <span>Lockdown (Apr-Jun)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #f9c74f;"></div>
+                        <span>Post-lockdown (Jul-Dec)</span>
+                    </div>
+                </div>
+                <div class="lockdown-note">
+                    <p>The visualization shows AQI changes across three distinct periods: pre-lockdown (January-March), 
+                    lockdown (April-June), and post-lockdown (July-December). Notice how air quality improved 
+                    significantly during the lockdown period when industrial activity and transportation were restricted.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const width = 1000, height = 600;
+        const graphWidth = 1000, graphHeight = 550;
+        const margin = { top: 40, right: 40, bottom: 60, left: 60 };
+
+        const projection = d3.geoMercator()
+            .center([78.9629, 22.5937])
+            .scale(1200)
+            .translate([width / 2, height / 2]);
+
+        const path = d3.geoPath().projection(projection);
+        const mapSvg = d3.select("#map");
+        const graphSvg = d3.select("#graph");
+        const monthParser = d3.timeParse("%B");
+        const monthOrder = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+
+        // Define time periods
+        const preLockdownMonths = ["January", "February", "March"];
+        const lockdownMonths = ["April", "May", "June"];
+        const postLockdownMonths = ["July", "August", "September", "October", "November", "December"];
+
+        // Define colors for each period
+        const periodColors = {
+            preLockdown: "#2a9d8f",
+            lockdown: "#e63946",
+            postLockdown: "#f9c74f"
+        };
+
+        function getPeriodClass(month) {
+            if (preLockdownMonths.includes(month)) return "data-point-pre";
+            if (lockdownMonths.includes(month)) return "data-point-lockdown";
+            return "data-point-post";
+        }
+
+        function getPeriodColor(month) {
+            if (preLockdownMonths.includes(month)) return periodColors.preLockdown;
+            if (lockdownMonths.includes(month)) return periodColors.lockdown;
+            return periodColors.postLockdown;
+        }
+
+        const cities = [
+            { name: "Delhi", coords: [77.1025, 28.7041] },
+            { name: "Mumbai", coords: [72.8777, 19.0760] },
+            { name: "Bangalore", coords: [77.5946, 12.9716] },
+            { name: "Chennai", coords: [80.2707, 13.0827] },
+            { name: "Hyderabad", coords: [78.4867, 17.3850] }
+        ];
+
+        const tooltip = d3.select("body").append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0);
+
+        d3.json("https://raw.githubusercontent.com/geohacker/india/master/state/india_telengana.geojson")
+            .then(function (data) {
+                mapSvg.append("g")
+                    .selectAll("path")
+                    .data(data.features)
+                    .enter()
+                    .append("path")
+                    .attr("d", path)
+                    .attr("fill", "#e9ecef")
+                    .attr("stroke", "#cbd5e0")
+                    .style("opacity", 0)
+                    .transition()
+                    .duration(1000)
+                    .delay((d, i) => i * 50)
+                    .style("opacity", 1);
+
+                cities.forEach((city, i) => {
+                    const [x, y] = projection(city.coords);
+                    const g = mapSvg.append("g")
+                        .attr("class", "city-group")
+                        .style("cursor", "pointer")
+                        .style("opacity", 0)
+                        .on("click", () => showCityData(city.name))
+                        .on("mouseover", function (event) {
+                            tooltip.transition()
+                                .duration(200)
+                                .style("opacity", .9);
+                            tooltip.html(`Click to view ${city.name}'s AQI data`)
+                                .style("left", (event.pageX + 10) + "px")
+                                .style("top", (event.pageY - 28) + "px");
+                        })
+                        .on("mouseout", function () {
+                            tooltip.transition()
+                                .duration(500)
+                                .style("opacity", 0);
+                        });
+
+                    g.transition()
+                        .duration(500)
+                        .delay(1000 + i * 200)
+                        .style("opacity", 1);
+
+                    g.append("circle")
+                        .attr("cx", x)
+                        .attr("cy", y)
+                        .attr("r", 8)
+                        .attr("class", "city-marker");
+
+                    g.append("text")
+                        .attr("x", x)
+                        .attr("y", y - 15)
+                        .attr("class", "city-label")
+                        .text(city.name);
+                });
+            });
+
+        function showMap() {
+            document.querySelector('.map-view').classList.remove('hidden');
+            document.querySelector('.graph-view').classList.remove('active');
+        }
+
+        function showCityData(cityName) {
+            document.querySelector('.map-view').classList.add('hidden');
+            document.querySelector('.graph-view').classList.add('active');
+            d3.select("#graph-title").text(`Monthly AQI Trends - ${cityName}`);
+
+            d3.csv(`${cityName.toLowerCase()}_aqi.csv`).then(data => {
+                const parsedData = data
+                    .map(d => ({
+                        month: monthParser(d.month),
+                        monthName: d.month,
+                        avg_aqi: +d.avg_aqi
+                    }))
+                    .sort((a, b) => monthOrder.indexOf(a.monthName) - monthOrder.indexOf(b.monthName));
+
+                graphSvg.selectAll("*").remove();
+
+                const xScale = d3.scalePoint()
+                    .domain(monthOrder)
+                    .range([margin.left, graphWidth - margin.right])
+                    .padding(0.5);
+
+                const yScale = d3.scaleLinear()
+                    .domain([0, d3.max(parsedData, d => d.avg_aqi)])
+                    .range([graphHeight - margin.bottom, margin.top]);
+
+                // Add axes first
+                graphSvg.append("g")
+                    .attr("transform", `translate(0,${graphHeight - margin.bottom})`)
+                    .call(d3.axisBottom(xScale))
+                    .selectAll("text")
+                    .style("text-anchor", "end")
+                    .attr("dx", "-.8em")
+                    .attr("dy", ".15em")
+                    .attr("transform", "rotate(-45)")
+                    .style("opacity", 0)
+                    .transition()
+                    .duration(500)
+                    .delay((d, i) => i * 50)
+                    .style("opacity", 1);
+
+                graphSvg.append("g")
+                    .attr("transform", `translate(${margin.left},0)`)
+                    .call(d3.axisLeft(yScale))
+                    .style("opacity", 0)
+                    .transition()
+                    .duration(500)
+                    .style("opacity", 1);
+
+                // Draw separate line segments for each period
+                function drawLineSegment(periodData, color) {
+                    const line = d3.line()
+                        .x(d => xScale(d.monthName))
+                        .y(d => yScale(d.avg_aqi))
+                        .curve(d3.curveMonotoneX);
+
+                    // Only draw if we have data
+                    if (periodData.length > 0) {
+                        const path = graphSvg.append("path")
+                            .datum(periodData)
+                            .attr("class", "line")
+                            .attr("stroke", color)
+                            .attr("d", line);
+
+                        setTimeout(() => {
+                            path.classed("visible", true);
+                        }, 200);
+                    }
+                }
+
+                // Split data by period
+                const preLockdownData = parsedData.filter(d => preLockdownMonths.includes(d.monthName));
+                const lockdownData = parsedData.filter(d => lockdownMonths.includes(d.monthName));
+                const postLockdownData = parsedData.filter(d => postLockdownMonths.includes(d.monthName));
+
+                // Add data points with different colors based on period
+                const points = graphSvg.selectAll("circle")
+                    .data(parsedData)
+                    .enter()
+                    .append("circle")
+                    .attr("class", d => getPeriodClass(d.monthName))
+                    .attr("cx", d => xScale(d.monthName))
+                    .attr("cy", d => yScale(d.avg_aqi))
+                    .attr("r", 5)
+                    .style("opacity", 0)
+                    .style("animation-delay", (d, i) => `${i * 100}ms`)
+                    .on("mouseover", function (event, d) {
+                        tooltip.transition()
+                            .duration(200)
+                            .style("opacity", .9);
+                        let period = "Post-lockdown";
+                        if (preLockdownMonths.includes(d.monthName)) period = "Pre-lockdown";
+                        if (lockdownMonths.includes(d.monthName)) period = "Lockdown";
+                        
+                        tooltip.html(`${d.monthName} (${period})<br/>AQI: ${d.avg_aqi.toFixed(2)}`)
+                            .style("left", (event.pageX + 10) + "px")
+                            .style("top", (event.pageY - 28) + "px");
+                    })
+                    .on("mouseout", function () {
+                        tooltip.transition()
+                            .duration(500)
+                            .style("opacity", 0);
+                    });
+
+                // Animate points appearing
+                points.transition()
+                    .duration(500)
+                    .delay((d, i) => i * 100)
+                    .style("opacity", 1)
+                    .on("end", function (d, i) {
+                        // Start line animations after last point appears
+                        if (i === parsedData.length - 1) {
+                            // Draw line segments for each period with appropriate colors
+                            drawLineSegment(preLockdownData, periodColors.preLockdown);
+                            drawLineSegment(lockdownData, periodColors.lockdown);
+                            drawLineSegment(postLockdownData, periodColors.postLockdown);
+                        }
+                    });
+
+                // Add axis labels
+                graphSvg.append("text")
+                    .attr("class", "axis-label")
+                    .attr("text-anchor", "middle")
+                    .attr("x", graphWidth / 2)
+                    .attr("y", graphHeight - 10)
+                    .text("Month");
+
+                graphSvg.append("text")
+                    .attr("class", "axis-label")
+                    .attr("text-anchor", "middle")
+                    .attr("transform", "rotate(-90)")
+                    .attr("x", -graphHeight / 2)
+                    .attr("y", 20)
+                    .text("Average AQI");
+
+            }).catch(error => {
+                console.error("Error loading CSV:", error);
+                document.querySelector('.graph-view').innerHTML =
+                    `<p style="color: #e63946; text-align: center;">Error loading data for ${cityName}</p>`;
+            });
+        }
+    </script>
+</body>
+</html>

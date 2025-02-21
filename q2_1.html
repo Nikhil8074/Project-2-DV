@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>India COVID-19 Map</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="CSS/q2_1.css">
+</head>
+
+<body>
+    <button class="back-button" onclick="window.location.href='q2.html'" style="position: fixed;">← Back</button>
+    <div id="container">
+        <h1 class="dashboard-title">COVID-19 Impact in India by State</h1>
+        <div class="visualization-container">
+            <div id="map-container">
+                <!-- Add Title -->
+                <h3 id="map-title"
+                    style="text-align: center; font-size: 1.5rem; color: white; margin-bottom: 0.5rem;">
+                    Choropleth Map 
+                </h3>
+                <!-- Add Instruction Below the Title -->
+                <p id="map-instruction" style="text-align: center; font-size: 0.9rem; color: white; margin-bottom: 1rem;">
+                    Click on a state to view its stats.
+                </p>
+
+                <!-- Existing Map -->
+                <div id="map"></div>
+                <div id="legend"></div>
+            </div>
+            <div id="line-graph-container">
+                <button class="back-button" onclick=closeGraph() style="position: fixed;">← Back to Map</button>
+                <div class="graph-title">COVID-19 Trends</div>
+                <div id="line-graph"></div>
+                <div class="graph-legend">
+                    <div class="graph-legend-item" data-series="confirmed">
+                        <div class="graph-legend-color" style="background: #ff6b6b;"></div>
+                        <span>Confirmed</span>
+                    </div>
+                    <div class="graph-legend-item" data-series="active">
+                        <div class="graph-legend-color" style="background: #4c6ef5;"></div>
+                        <span>Active</span>
+                    </div>
+                    <div class="graph-legend-item" data-series="recovered">
+                        <div class="graph-legend-color" style="background: #51cf66;"></div>
+                        <span>Recovered</span>
+                    </div>
+                    <div class="graph-legend-item" data-series="deaths">
+                        <div class="graph-legend-color" style="background: #868e96;"></div>
+                        <span>Deaths</span>
+                    </div>
+                </div>
+                <div class="axis-note" style="text-align: center; font-size: 0.9rem; color: white;">
+                    Note: Active Cases & Deaths use right y-axis • Confirmed & Recovered Cases use left y-axis
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="tooltip" style="opacity: 0;"></div>
+
+    <script src="JS/q2_1.js">
+    </script>
+</body>
+
+</html>

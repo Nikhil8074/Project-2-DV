@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vaccination Progress in INDIA</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="CSS/styles.css">
+    <link rel="stylesheet" href="CSS/q3.css">
+</head>
+<body>
+    <button class="back-button" onclick="window.location.href='index.html'" style="position: fixed;">← Back</button>
+    
+    <div class="container">
+        <h1>Vaccination Progress in INDIA</h1>
+        <div class="visualization-container">
+            <h2>Total Vaccination Progress Across States</h2>
+            <div class="visualization_slot" id="visualization_1"></div>
+        </div>
+        
+        <div class="visualization-container">
+            <h2>Monthly Vaccination Progress in INDIA</h2>
+            <div class="visualization_slot" id="visualization_2"></div>
+        </div>
+
+        <div class="visualization-container" style="height: 95vh;">
+            <h2>Monthly Vaccination Progress Across Age Groups</h2>
+            <div class="visualization_slot" id="visualization_3"></div>
+        </div>
+    </div>
+    <script src="JS/q3_1.js"></script>
+    <script src="JS/q3_2.js"></script>
+    <script src="JS/q3_3.js"></script>
+  </body>
+</html>

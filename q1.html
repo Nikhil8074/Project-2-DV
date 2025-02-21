@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COVID-19 Global Tracker</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://d3js.org/topojson.v3.min.js"></script>
+    <link rel="stylesheet" href="CSS/q1.css">
+</head>
+<body>
+    <button class="back-button" onclick="window.location.href='index.html'" >← Back</button>
+    <div class="title">
+        <h1>COVID-19 Global Tracker</h1>
+    </div>
+    <div id="globe"></div>
+    <div id="info-panel"></div>
+    <div id="top-countries-panel">
+        <h3>Top 10 Countries by Deaths</h3>
+        <div id="top-countries-list"></div>
+    </div>
+    <div class="global-stats">
+        <h3>Global Statistics</h3>
+        <div id="global-stats-content"></div>
+    </div>
+    <button class="reset-rotation">Reset View</button>
+
+    <script src="JS/q1.js">
+    </script>
+</body>
+</html>
