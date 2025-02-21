@@ -359,7 +359,7 @@ h1::after {
     font-weight: 500;
 }
 
-/* Chart Animations */
+
 .bar-enter {
     opacity: 0;
     transform: scaleY(0);
@@ -375,7 +375,7 @@ h1::after {
     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Axis Styling */
+
 .axis-label {
     font-size: 0.875rem;
     font-weight: 500;

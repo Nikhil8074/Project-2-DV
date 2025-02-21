@@ -4,7 +4,7 @@ let lastMousePosition = { x: 0, y: 0 };
 let selectedCountryId = null;
 let top10Countries = [];
 
-// Load and process CSV data
+
 d3.csv("archive/Global_data.csv").then(data => {
     data.forEach(d => {
         covidData[d.Country] = {
@@ -90,7 +90,7 @@ function updateGlobalStats() {
         `);
 }
 
-// Set up the globe
+
 const width = window.innerWidth;
 const height = window.innerHeight;
 const sensitivity = 75;
@@ -361,7 +361,6 @@ function showQuickInfo(data) {
 }
 
 function showDetailedInfo(data) {
-    // Hide the global stats and top countries panels
     document.querySelector('.global-stats').classList.add('hidden');
     document.getElementById('top-countries-panel').classList.add('hidden');
     

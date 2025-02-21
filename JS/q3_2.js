@@ -5,7 +5,6 @@ const margin2 = {top: 30, right: 30, bottom: 100, left: 80};
 const innerWidth2 = width2 - margin2.left - margin2.right;
 const innerHeight2 = height2 - margin2.top - margin2.bottom;
 
-// Create SVG container
 const svg2 = d3.select("#visualization_2")
     .append("svg")
     .attr("width", "100%")
@@ -16,13 +15,12 @@ const svg2 = d3.select("#visualization_2")
 const g2 = svg2.append("g")
     .attr("transform", `translate(${margin2.left},${margin2.top})`);
 
-// Create tooltip
 const tooltip2 = d3.select("body")
     .append("div")
     .attr("class", "tooltip")
     .style("opacity", 0);
 
-// Add sorting buttons container
+
 const buttonContainer = d3.select("#visualization_2")
     .insert("div", "svg")
     .style("margin-bottom", "20px")
@@ -30,7 +28,6 @@ const buttonContainer = d3.select("#visualization_2")
     .style("gap", "10px")
     .style("justify-content", "center");
 
-// Add sorting buttons
 const buttons = buttonContainer
     .selectAll("button")
     .data([
@@ -47,12 +44,10 @@ const buttons = buttonContainer
     .classed("active", d => d.id === "chronological")
     .text(d => d.text);
 
-// Color scale for the stacked bars
 const color = d3.scaleOrdinal()
     .domain(["dose_one", "dose_two", "dose_precaution"])
     .range(["#74c476", "#31a354", "#006d2c"]);
 
-// Set up scales
 const x = d3.scaleBand()
     .range([0, innerWidth2])
     .padding(0.2);
@@ -61,7 +56,6 @@ const y = d3.scaleLinear()
     .range([innerHeight2, 0])
     .nice();
 
-// Helper functions
 function getDoseName(key) {
     const names = {
         "dose_one": "First Dose",
@@ -76,9 +70,8 @@ function formatMonthYear(monthStr) {
     return d3.timeFormat("%b %Y")(date);
 }
 
-// Load and process data
 d3.csv("archive/q3_montly.csv").then(function(data) {
-    // Format the data
+
     data.forEach(d => {
         d.month = d.month;
         d.dose_one = +d.dose_one;
@@ -88,9 +81,7 @@ d3.csv("archive/q3_montly.csv").then(function(data) {
         d.date = d3.timeParse("%Y-%m")(d.month);
     });
 
-    // Function to update the visualization
     function updateChart(sortType) {
-        // Sort data based on selected option
         let sortedData = [...data];
         switch(sortType) {
             case "ascending":
@@ -103,35 +94,28 @@ d3.csv("archive/q3_montly.csv").then(function(data) {
                 sortedData.sort((a, b) => a.date - b.date);
         }
 
-        // Update domains
         x.domain(sortedData.map(d => d.month));
         y.domain([0, d3.max(sortedData, d => d.total)]);
 
-        // Update button styles
         buttons.classed("active", d => d.id === sortType)
             .style("background", d => d.id === sortType ? "rgba(255, 255, 255, 0.3)" : "rgba(255, 255, 255, 0.1)");
 
-        // Stack the data
         const stack = d3.stack()
             .keys(["dose_one", "dose_two", "dose_precaution"]);
         const stackedData = stack(sortedData);
 
-        // Update or create bars
         const barGroups = g2.selectAll(".stacked-bar-group")
             .data(stackedData);
 
-        // Enter new groups
         const barGroupsEnter = barGroups.enter()
             .append("g")
             .attr("class", "stacked-bar-group")
             .attr("fill", d => color(d.key));
 
-        // Update existing and new bars
         const bars = barGroups.merge(barGroupsEnter)
             .selectAll("rect")
             .data(d => d);
 
-        // Enter new bars with modified transition
         bars.enter()
             .append("rect")
             .merge(bars)
@@ -164,17 +148,17 @@ d3.csv("archive/q3_montly.csv").then(function(data) {
                     .attr("stroke", "none");
             })
             .transition()
-            .duration(750) // Reduced duration
-            .ease(d3.easeCubicOut) // Changed easing function to prevent bouncing
+            .duration(750) 
+            .ease(d3.easeCubicOut)
             .attr("x", d => x(d.data.month))
-            .attr("y", d => Math.max(0, y(d[1]))) // Prevent going below y=0
-            .attr("height", d => Math.max(0, y(d[0]) - y(d[1]))) // Ensure positive height
+            .attr("y", d => Math.max(0, y(d[1])))
+            .attr("height", d => Math.max(0, y(d[0]) - y(d[1]))) 
             .attr("width", x.bandwidth());
 
-        // Remove old bars
+    
         bars.exit().remove();
 
-        // Update axes with transition
+        
         g2.select(".x-axis")
             .transition()
             .duration(750)
@@ -196,12 +180,10 @@ d3.csv("archive/q3_montly.csv").then(function(data) {
             .style("fill", "#ffffff");
     }
 
-    // Add click handlers to buttons
     buttons.on("click", function(event, d) {
         updateChart(d.id);
     });
 
-    // Create initial axes
     g2.append("g")
         .attr("class", "x-axis")
         .attr("transform", `translate(0,${innerHeight2})`);
@@ -209,7 +191,6 @@ d3.csv("archive/q3_montly.csv").then(function(data) {
     g2.append("g")
         .attr("class", "y-axis");
 
-    // Add y-axis label
     g2.append("text")
         .attr("transform", "rotate(-90)")
         .attr("x", -innerHeight2 / 2)
@@ -219,7 +200,6 @@ d3.csv("archive/q3_montly.csv").then(function(data) {
         .style("fill", "#ffffff")
         .text("Number of Vaccine Doses");
 
-    // Create legend
     const legend = svg2.append("g")
         .attr("class", "legend")
         .attr("transform", `translate(${margin2.left + innerWidth2 - 270}, ${margin2.top - 30})`);
@@ -230,7 +210,6 @@ d3.csv("archive/q3_montly.csv").then(function(data) {
         {key: "dose_precaution", label: "Precaution Dose"}
     ];
 
-    // Create legend items
     const legendItems = legend.selectAll(".legend-item")
         .data(doseTypes)
         .enter()
@@ -238,13 +217,11 @@ d3.csv("archive/q3_montly.csv").then(function(data) {
         .attr("class", "legend-item")
         .attr("transform", (d, i) => `translate(0, ${i * 25})`);
 
-    // Add legend rectangles
     legendItems.append("rect")
         .attr("width", 15)
         .attr("height", 15)
         .attr("fill", d => color(d.key));
 
-    // Add legend labels
     legendItems.append("text")
         .attr("x", 25)
         .attr("y", 12)
@@ -252,7 +229,6 @@ d3.csv("archive/q3_montly.csv").then(function(data) {
         .style("fill", "black")
         .text(d => d.label);
 
-    // Add legend background
     legend.insert("rect", ":first-child")
         .attr("x", -10)
         .attr("y", -10)
@@ -264,6 +240,5 @@ d3.csv("archive/q3_montly.csv").then(function(data) {
         .style("border-radius", "8px")
         .attr("ry", 5);
 
-    // Initialize the chart
     updateChart("chronological");
 });

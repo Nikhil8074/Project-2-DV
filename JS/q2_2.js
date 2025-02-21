@@ -5,7 +5,7 @@ d3.csv("archive/q2_2.csv").then(function(rawData) {
             confirmed: +d.confirmed,
             cured: +d.cured,
             deaths: +d.deaths,
-            active: Math.max(0, +d.active) // Ensure no negative values
+            active: Math.max(0, +d.active) 
         }));
     };
 
@@ -52,7 +52,6 @@ d3.csv("archive/q2_2.csv").then(function(rawData) {
             .range([height, 0]);
 
         if (isFullSize) {
-            // Add grid
             svg.append('g')
                 .attr('class', 'grid')
                 .attr('transform', `translate(0,${height})`)
@@ -74,7 +73,6 @@ d3.csv("archive/q2_2.csv").then(function(rawData) {
                     .tickFormat(''));
         }
 
-        // Add area with animation
         const area = d3.area()
             .x(d => x(new Date(d.date)))
             .y0(height)
@@ -87,7 +85,6 @@ d3.csv("archive/q2_2.csv").then(function(rawData) {
             .attr('d', area);
 
         if (!isFullSize) {
-            // Add animation for the area in the small chart
             const totalLength = areaPath.node().getTotalLength();
             areaPath
                 .attr("stroke-dasharray", totalLength + " " + totalLength)
@@ -98,7 +95,6 @@ d3.csv("archive/q2_2.csv").then(function(rawData) {
                 .attr("stroke-dashoffset", 0);
         }
 
-        // Add line with animation
         const line = d3.line()
             .x(d => x(new Date(d.date)))
             .y(d => y(d.deaths))
@@ -111,7 +107,6 @@ d3.csv("archive/q2_2.csv").then(function(rawData) {
             .attr('stroke-width', isFullSize ? 3 : 2)
             .attr('d', line);
 
-        // Animate the line
         const totalLength = path.node().getTotalLength();
         path
             .attr("stroke-dasharray", totalLength + " " + totalLength)
@@ -122,7 +117,6 @@ d3.csv("archive/q2_2.csv").then(function(rawData) {
             .attr("stroke-dashoffset", 0);
 
         if (isFullSize) {
-            // Add interactive dots with animation
             svg.selectAll('.dot')
                 .data(data)
                 .enter()
@@ -130,14 +124,13 @@ d3.csv("archive/q2_2.csv").then(function(rawData) {
                 .attr('class', 'dot')
                 .attr('cx', d => x(new Date(d.date)))
                 .attr('cy', d => y(d.deaths))
-                .attr('r', 0) // Start with radius 0
+                .attr('r', 0) 
                 .attr('fill', '#ffffff')
-                .transition() // Add transition
+                .transition() 
                 .duration(1000)
                 .delay((d, i) => i * 50)
-                .attr('r', 4) // End with radius 4
+                .attr('r', 4) 
                 .on('end', function() {
-                    // Add event listeners after transition
                     d3.select(this)
                         .on('mouseover', function(event, d) {
                             d3.select(this)
@@ -173,7 +166,7 @@ d3.csv("archive/q2_2.csv").then(function(rawData) {
                         });
                 });
 
-            // Add axes with animation
+
             svg.append('g')
                 .attr('transform', `translate(0,${height})`)
                 .call(d3.axisBottom(x)
@@ -197,7 +190,6 @@ d3.csv("archive/q2_2.csv").then(function(rawData) {
                 .selectAll('text')
                 .style('fill', '#ffffff');
 
-            // Add titles with animation
             svg.append('text')
                 .attr('x', width / 2)
                 .attr('y', -30)
@@ -238,7 +230,6 @@ d3.csv("archive/q2_2.csv").then(function(rawData) {
                 .duration(1000)
                 .style('opacity', 1);
         } else {
-            // Simplified axes for preview
             svg.append('g')
                 .attr('transform', `translate(0,${height})`)
                 .call(d3.axisBottom(x)
@@ -293,7 +284,6 @@ d3.csv("archive/q2_2.csv").then(function(rawData) {
             .range(['#f87171', '#34d399', '#6b7280']);
 
         const updateChart = (type) => {
-            // Remove existing bars with transition
             svg.selectAll('.layer')
                 .transition()
                 .duration(500)
@@ -301,7 +291,6 @@ d3.csv("archive/q2_2.csv").then(function(rawData) {
                 .remove();
 
             if (type === 'stacked') {
-                // Add stacked bars with animation
                 const layers = svg.selectAll('g.layer')
                     .data(stackedData)
                     .enter()
@@ -314,16 +303,15 @@ d3.csv("archive/q2_2.csv").then(function(rawData) {
                     .enter()
                     .append('rect')
                     .attr('x', d => x(d.data.date))
-                    .attr('y', height) // Start from bottom
-                    .attr('height', 0) // Start with height 0
+                    .attr('y', height)
+                    .attr('height', 0) 
                     .attr('width', x.bandwidth())
-                    .transition() // Add transition
+                    .transition()
                     .duration(1000)
                     .delay((d, i) => i * 10)
                     .attr('y', d => y(d[1]))
                     .attr('height', d => y(d[0]) - y(d[1]));
 
-                // Add hover effects after transition
                 layers.selectAll('rect')
                     .on('mouseover', function(event, d) {
                         const key = d3.select(this.parentNode).datum().key;
@@ -361,7 +349,6 @@ d3.csv("archive/q2_2.csv").then(function(rawData) {
                     .range([0, x.bandwidth()])
                     .padding(0.05);
 
-                // Add grouped bars with animation
                 const groups = svg.selectAll('g.date')
                     .data(data)
                     .enter()
@@ -374,17 +361,16 @@ d3.csv("archive/q2_2.csv").then(function(rawData) {
                     .enter()
                     .append('rect')
                     .attr('x', d => x1(d.key))
-                    .attr('y', height) // Start from bottom
+                    .attr('y', height)
                     .attr('width', x1.bandwidth())
-                    .attr('height', 0) // Start with height 0
+                    .attr('height', 0)
                     .attr('fill', d => color(d.key))
-                    .transition() // Add transition
+                    .transition()
                     .duration(1000)
                     .delay((d, i) => i * 50)
                     .attr('y', d => y(d.value))
                     .attr('height', d => height - y(d.value));
 
-                // Add hover effects after transition
                 groups.selectAll('rect')
                     .on('mouseover', function(event, d) {
                         d3.select(this)
@@ -416,7 +402,6 @@ d3.csv("archive/q2_2.csv").then(function(rawData) {
             }
         };
 
-        // Add axes with animation
         svg.append('g')
             .attr('transform', `translate(0,${height})`)
             .call(d3.axisBottom(x)
@@ -440,7 +425,6 @@ d3.csv("archive/q2_2.csv").then(function(rawData) {
             .selectAll('text')
             .style('fill', '#ffffff');
 
-        // Add axis labels with animation
         svg.append('text')
             .attr('transform', 'rotate(-90)')
             .attr('y', 0 - margin.left)
@@ -466,10 +450,8 @@ d3.csv("archive/q2_2.csv").then(function(rawData) {
             .duration(1000)
             .style('opacity', 1);
 
-        // Initialize with stacked view
         updateChart('stacked');
 
-        // Add button click handlers
         d3.selectAll('.btn').on('click', function() {
             const type = this.getAttribute('data-type');
             d3.selectAll('.btn').classed('active', false);
@@ -484,7 +466,6 @@ d3.csv("archive/q2_2.csv").then(function(rawData) {
     createMainChart(monthlyData);
     createDeathsChart(monthlyData, '#small-deaths-chart', false);
 
-    // Set up modal functionality
     const modal = document.getElementById('deaths-modal');
     const preview = document.getElementById('deaths-preview');
     const closeBtn = document.querySelector('.close-button');

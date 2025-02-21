@@ -1,6 +1,6 @@
 function closeGraph() {
-    document.getElementById("line-graph-container").style.display = "none"; // Hide the graph
-    document.getElementById("map-container").style.display = "block"; // Show the map again
+    document.getElementById("line-graph-container").style.display = "none";
+    document.getElementById("map-container").style.display = "block";
 }
 async function createCovidMap() {
     const [covidData, timeSeriesData, indiaGeoJSON] = await Promise.all([
@@ -45,7 +45,7 @@ async function createCovidMap() {
         const innerWidth = graphWidth - margin.left - margin.right;
         const innerHeight = graphHeight - margin.top - margin.bottom;
 
-        // Filter and prepare data for the selected state
+        
         const stateData = timeSeriesData.filter(d => d.region === stateName)
             .map(d => ({
                 date: new Date(d.date),
@@ -56,7 +56,7 @@ async function createCovidMap() {
             }))
             .sort((a, b) => a.date - b.date);
 
-        // Clear previous graph
+        
         d3.select("#line-graph").html("");
 
         const graphSvg = d3.select("#line-graph")
@@ -67,24 +67,23 @@ async function createCovidMap() {
         const g = graphSvg.append("g")
             .attr("transform", `translate(${margin.left},${margin.top})`);
 
-        // Scales
         const xScale = d3.scaleTime()
             .domain(d3.extent(stateData, d => d.date))
             .range([0, innerWidth]);
 
-        // Left y-axis scale for confirmed and recovered cases
+        
         const yScaleLeft = d3.scaleLinear()
             .domain([0, d3.max(stateData, d => Math.max(d.confirmed, d.recovered))])
             .range([innerHeight, 0])
             .nice();
 
-        // Right y-axis scale for active cases and deaths
+        
         const yScaleRight = d3.scaleLinear()
             .domain([0, d3.max(stateData, d => Math.max(d.active, d.deaths))])
             .range([innerHeight, 0])
             .nice();
 
-        // Line generators
+        
         const lineLeft = d3.line()
             .x(d => xScale(d.date))
             .y(d => yScaleLeft(d.value))
@@ -95,7 +94,6 @@ async function createCovidMap() {
             .y(d => yScaleRight(d.value))
             .curve(d3.curveMonotoneX);
 
-        // Add lines without transitions
         const leftAxisCategories = ['confirmed', 'recovered'];
         const rightAxisCategories = ['active', 'deaths'];
 
@@ -123,7 +121,6 @@ async function createCovidMap() {
                 .attr("d", lineRight);
         });
 
-        // Add axes
         const xAxis = d3.axisBottom(xScale)
             .ticks(5)
             .tickFormat(d3.timeFormat("%b %Y"));
@@ -157,7 +154,7 @@ async function createCovidMap() {
             .selectAll("text")
             .style("fill", "#ffffff");
 
-        // Add axis labels
+   
         g.append("text")
             .attr("class", "axis-label")
             .attr("x", innerWidth)
@@ -166,7 +163,7 @@ async function createCovidMap() {
             .text("Date")
             .style("fill", "#ffffff");
 
-        // Left y-axis label
+     
         g.append("text")
             .attr("class", "axis-label")
             .attr("transform", "rotate(-90)")
@@ -177,7 +174,7 @@ async function createCovidMap() {
             .text("Confirmed & Recovered Cases")
             .style("fill", "#ffffff");
 
-        // Right y-axis label
+
         g.append("text")
             .attr("class", "axis-label")
             .attr("transform", "rotate(90)")
@@ -188,7 +185,7 @@ async function createCovidMap() {
             .text("Active Cases & Deaths")
             .style("fill", "#ffffff");
 
-        // Update graph title
+
         d3.select(".graph-title").text(`COVID-19 Trends in ${stateName}`).style("color", "#ffffff");
     }
 
@@ -224,42 +221,35 @@ async function createCovidMap() {
         .on("click", (event, d) => {
             const stateName = d.properties.NAME_1;
 
-            // Reset previous active state
             if (activeState) {
                 d3.select(activeState)
                     .classed("active", false);
             }
 
-            // Set new active state
             activeState = event.target;
             d3.select(activeState)
                 .classed("active", true);
 
-            // Hide map container and show line graph
             document.getElementById("map-container").style.display = "none";
             document.getElementById("line-graph-container").style.display = "block";
 
-            // Create line graph with state data
             createLineGraph(stateName);
         });
 
     const maxDeaths = d3.max(Array.from(dataMap.values()).map(d => d.deaths)) || 1;
 
-    // Select the legend container and clear existing content
     const legendContainer = d3.select("#legend")
         .style("display", "flex")
         .style("flex-direction", "column")
         .style("align-items", "center")
         .style("margin-top", "10px");
 
-    // Remove old legend if present
     legendContainer.selectAll("*").remove();
 
-    // Create an SVG for the horizontal color scale
     const legendWidth = 250, legendHeight = 20;
     const legendSvg = legendContainer.append("svg")
         .attr("width", legendWidth)
-        .attr("height", legendHeight + 30); // Extra space for labels
+        .attr("height", legendHeight + 30); 
 
     const defs = legendSvg.append("defs");
     const linearGradient = defs.append("linearGradient")

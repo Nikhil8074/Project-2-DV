@@ -5,7 +5,6 @@ const margin3 = {top: 30, right: 30, bottom: 100, left: 80};
 const innerWidth3 = width3 - margin3.left - margin3.right;
 const innerHeight3 = height3 - margin3.top - margin3.bottom;
 
-// Create SVG container
 const svg3 = d3.select("#visualization_3")
     .append("svg")
     .attr("width", "100%")
@@ -16,13 +15,12 @@ const svg3 = d3.select("#visualization_3")
 const g3 = svg3.append("g")
     .attr("transform", `translate(${margin3.left},${margin3.top})`);
 
-// Create tooltip
 const tooltip3 = d3.select("body")
     .append("div")
     .attr("class", "tooltip")
     .style("opacity", 0);
 
-// Add sorting buttons container
+
 const buttonContainer3 = d3.select("#visualization_3")
     .insert("div", "svg")
     .style("margin-bottom", "20px")
@@ -30,7 +28,6 @@ const buttonContainer3 = d3.select("#visualization_3")
     .style("gap", "10px")
     .style("justify-content", "center");
 
-// Add sorting buttons
 const buttons3 = buttonContainer3
     .selectAll("button")
     .data([
@@ -47,12 +44,10 @@ const buttons3 = buttonContainer3
     .classed("active", d => d.id === "chronological")
     .text(d => d.text);
 
-// Color scale for age groups
 const colorAge = d3.scaleOrdinal()
     .domain(["children", "teens", "adults", "middle_aged", "senior"])
     .range(["#ff7f0e", "#1f77b4", "#2ca02c", "#d62728", "#9467bd"]);
 
-// Set up scales
 const x3 = d3.scaleBand()
     .range([0, innerWidth3])
     .padding(0.1);
@@ -63,7 +58,6 @@ const x3Group = d3.scaleBand()
 const y3 = d3.scaleLinear()
     .range([innerHeight3, 0]);
 
-// Helper functions
 function formatMonthYear3(monthStr) {
     const date = d3.timeParse("%Y-%m")(monthStr);
     return d3.timeFormat("%b %Y")(date);
@@ -94,9 +88,7 @@ d3.csv("archive/q3_montly.csv").then(function(data) {
 
     const ageGroups = ["children", "teens", "adults", "middle_aged", "senior"];
 
-    // Function to update the visualization
     function updateChart3(sortType) {
-        // Sort data based on selected option
         let sortedData = [...data];
         switch(sortType) {
             case "ascending":
@@ -109,18 +101,15 @@ d3.csv("archive/q3_montly.csv").then(function(data) {
                 sortedData.sort((a, b) => a.date - b.date);
         }
 
-        // Update domains
         x3.domain(sortedData.map(d => d.month));
         x3Group.domain(ageGroups).range([0, x3.bandwidth()]);
         y3.domain([0, d3.max(sortedData, d => 
             Math.max(d.children, d.teens, d.adults, d.middle_aged, d.senior)
         )]).nice();
 
-        // Update button styles
         buttons3.classed("active", d => d.id === sortType)
             .style("background", d => d.id === sortType ? "rgba(255, 255, 255, 0.3)" : "rgba(255, 255, 255, 0.1)");
 
-        // Create bars for each age group
         const barGroups = g3.selectAll(".month-group")
             .data(sortedData);
 
@@ -129,18 +118,14 @@ d3.csv("archive/q3_montly.csv").then(function(data) {
             .attr("class", "month-group")
             .attr("transform", d => `translate(${x3(d.month)},0)`);
 
-        // Update existing groups
         barGroups.transition()
             .duration(750)
             .attr("transform", d => `translate(${x3(d.month)},0)`);
 
-        // Remove old groups
         barGroups.exit().remove();
 
-        // Merge enter and update selections
         const allGroups = barGroups.merge(barGroupsEnter);
 
-        // Create bars for each age group within month groups
         ageGroups.forEach(age => {
             const bars = allGroups.selectAll(`.bar-${age}`)
                 .data(d => [{
@@ -150,7 +135,6 @@ d3.csv("archive/q3_montly.csv").then(function(data) {
                     total: d.total_age
                 }]);
 
-            // Enter new bars
             bars.enter()
                 .append("rect")
                 .attr("class", `bar-${age}`)
@@ -191,11 +175,9 @@ d3.csv("archive/q3_montly.csv").then(function(data) {
                 .attr("width", x3Group.bandwidth())
                 .attr("height", d => innerHeight3 - y3(d.value));
 
-            // Remove old bars
             bars.exit().remove();
         });
 
-        // Update axes
         g3.select(".x-axis3")
             .attr("transform", `translate(0,${innerHeight3})`)
             .transition()
@@ -218,12 +200,10 @@ d3.csv("archive/q3_montly.csv").then(function(data) {
             .style("fill", "#ffffff");
     }
 
-    // Add click handlers to buttons
     buttons3.on("click", function(event, d) {
         updateChart3(d.id);
     });
 
-    // Create axes
     g3.append("g")
         .attr("class", "x-axis3")
         .attr("transform", `translate(0,${innerHeight3})`);
@@ -231,7 +211,6 @@ d3.csv("archive/q3_montly.csv").then(function(data) {
     g3.append("g")
         .attr("class", "y-axis3");
 
-    // Add y-axis label
     g3.append("text")
         .attr("transform", "rotate(-90)")
         .attr("x", -innerHeight3 / 2)
@@ -241,7 +220,6 @@ d3.csv("archive/q3_montly.csv").then(function(data) {
         .style("fill", "#ffffff")
         .text("Number of Vaccinations");
 
-    // Create legend
     const legend3 = svg3.append("g")
         .attr("class", "legend")
         .attr("transform", `translate(${margin3.left + innerWidth3 - 300}, ${margin3.top - 70})`);
@@ -254,7 +232,6 @@ d3.csv("archive/q3_montly.csv").then(function(data) {
         {key: "senior", label: "Senior (65+ years old)"},
     ];
 
-    // Create legend items
     const legendItems3 = legend3.selectAll(".legend-item")
         .data(ageTypes)
         .enter()
@@ -262,13 +239,11 @@ d3.csv("archive/q3_montly.csv").then(function(data) {
         .attr("class", "legend-item")
         .attr("transform", (d, i) => `translate(0, ${i * 25})`);
 
-    // Add legend rectangles
     legendItems3.append("rect")
         .attr("width", 15)
         .attr("height", 15)
         .attr("fill", d => colorAge(d.key));
 
-    // Add legend labels
     legendItems3.append("text")
         .attr("x", 25)
         .attr("y", 12)
@@ -276,7 +251,6 @@ d3.csv("archive/q3_montly.csv").then(function(data) {
         .style("fill", "black")
         .text(d => d.label);
 
-    // Add legend background
     legend3.insert("rect", ":first-child")
         .attr("x", -10)
         .attr("y", -10)
@@ -288,6 +262,5 @@ d3.csv("archive/q3_montly.csv").then(function(data) {
         .style("border-radius", "8px")
         .attr("ry", 5);
 
-    // Initialize the chart
     updateChart3("chronological");
 });

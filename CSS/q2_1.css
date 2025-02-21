@@ -263,7 +263,6 @@ body {
     line-height: 1.4;
 }
 
-/* Responsive adjustments */
 @media (max-width: 1200px) {
     .visualization-container {
         grid-template-columns: 1fr;
@@ -293,20 +292,17 @@ body {
     }
 }
 
-/* Enhanced transitions */
 .hidden {
     opacity: 0.1 !important;
     transition: opacity 0.3s ease;
 }
 
-/* Smooth transitions for graph elements */
 path,
 line,
 text {
     transition: all 0.3s ease;
 }
 
-/* Better axis styling */
 .domain {
     stroke: #dee2e6;
 }
